@@ -12,11 +12,71 @@ import schedule
 import time
 from threading import Thread
 from config import WEATHER_API_KEY, NEWS_API_KEY
+from google_auth_oauthlib.flow import InstalledAppFlow
+from googleapiclient.discovery import build
+from google.auth.transport.requests import Request
+import os.path
+import pickle
+
+
+
+
+class CalendarAPI:
+    def __init__(self):
+        self.SCOPES = ['https://www.googleapis.com/auth/calendar']
+        self.credentials = None
+        self.service = None
+        self.authenticate()
+
+    def authenticate(self):
+        """Authenticate with Google Calendar API"""
+        if os.path.exists('token.pickle'):
+            with open('token.pickle', 'rb') as token:
+                self.credentials = pickle.load(token)
+        
+        if not self.credentials or not self.credentials.valid:
+            if self.credentials and self.credentials.expired and self.credentials.refresh_token:
+                self.credentials.refresh(Request())
+            else:
+                flow = InstalledAppFlow.from_client_secrets_file(
+                    'credentials.json', self.SCOPES)
+                self.credentials = flow.run_local_server(port=0)
+            with open('token.pickle', 'wb') as token:
+                pickle.dump(self.credentials, token)
+        
+        self.service = build('calendar', 'v3', credentials=self.credentials)
+
+    def list_events(self):
+        """List the next 5 events from the calendar"""
+        events_result = self.service.events().list(
+            calendarId='primary', maxResults=5, singleEvents=True,
+            orderBy='startTime').execute()
+        events = events_result.get('items', [])
+        
+        event_list = []
+        for event in events:
+            start = event['start'].get('dateTime', event['start'].get('date'))
+            event_list.append(f"{start}: {event['summary']}")
+        return event_list
+
+    def add_event(self, summary, start_time, end_time, description=''):
+        """Add an event to the calendar"""
+        event = {
+            'summary': summary,
+            'description': description,
+            'start': {'dateTime': start_time, 'timeZone': 'UTC'},
+            'end': {'dateTime': end_time, 'timeZone': 'UTC'}
+        }
+        created_event = self.service.events().insert(calendarId='primary', body=event).execute()
+        return created_event['htmlLink']
 
 class VirtualAssistant:
     def __init__(self):
         # Initialize speech recognition
         self.recognizer = sr.Recognizer()
+
+        # Initialize CalendarAPI
+        self.calendar = CalendarAPI()
         
         # Initialize text-to-speech engine
         self.speaker = pyttsx3.init()
@@ -94,6 +154,26 @@ class VirtualAssistant:
             self.speak("Goodbye!")
             return False
 
+        elif "calendar" in command:
+            if "events" in command:
+                events = self.calendar.list_events()
+                if events:
+                    self.speak("Here are your upcoming events:")
+                    for event in events:
+                        self.speak(event)
+                else:
+                    self.speak("You have no upcoming events.")
+                    
+        elif "add event" in command:
+            self.speak("What is the event title?")
+            title = self.listen()
+            self.speak("What is the start time? (e.g., 2025-01-12T10:00:00)")
+            start_time = self.listen()
+            self.speak("What is the end time? (e.g., 2025-01-12T11:00:00)")
+            end_time = self.listen()
+            link = self.calendar.add_event(title, start_time, end_time)
+            self.speak(f"Event added. You can view it here: {link}")
+            
         return True
 
     def set_reminder(self, command):
