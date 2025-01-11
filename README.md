@@ -160,7 +160,6 @@ The assistant includes error handling for:
 
 ## Future Improvements
 
-- Calendar integration
 - Email functionality
 - Music player control
 - Smart home device integration
