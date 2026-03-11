@@ -6,7 +6,7 @@
 [![Code style: ruff](https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json)](https://github.com/astral-sh/ruff)
 [![Checked with mypy](https://www.mypy-lang.org/static/mypy_badge.svg)](https://mypy-lang.org/)
 
-A production-grade, fully asynchronous Python voice assistant. Speak naturally to get weather forecasts, news headlines, time and date, set reminders, launch applications, and perform web searches — all hands-free.
+Production-grade Python virtual assistant with full asynchronous support. Speak naturally to: get weather forecasts, read news headlines, check time and date, set reminders, launch apps, and browse the web — completely hands-free.
 
 ---
 
