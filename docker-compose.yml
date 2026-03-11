@@ -1,0 +1,30 @@
+version: "3.9"
+
+services:
+  assistant:
+    build:
+      context: .
+      target: runtime
+    image: virtual-personal-assistant:latest
+    container_name: voice-assistant
+    restart: unless-stopped
+    env_file:
+      - .env
+    volumes:
+      - assistant_data:/app/data
+      - assistant_logs:/app/logs
+    devices:
+      # Pass through host audio devices for microphone/speaker access
+      - /dev/snd:/dev/snd
+    environment:
+      - PULSE_SERVER=unix:${XDG_RUNTIME_DIR}/pulse/native
+    volumes:
+      - assistant_data:/app/data
+      - assistant_logs:/app/logs
+      - ${XDG_RUNTIME_DIR}/pulse/native:${XDG_RUNTIME_DIR}/pulse/native
+
+volumes:
+  assistant_data:
+    driver: local
+  assistant_logs:
+    driver: local

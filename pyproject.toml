@@ -1,0 +1,111 @@
+[build-system]
+requires = ["setuptools>=72", "wheel"]
+build-backend = "setuptools.backends.legacy:build"
+
+[project]
+name = "virtual-personal-assistant"
+version = "1.0.0"
+description = "Production-grade Python voice assistant with async architecture"
+authors = [{ name = "Stephen Ombuya", email = "stephen@example.com" }]
+license = { text = "MIT" }
+readme = "README.md"
+requires-python = ">=3.10"
+keywords = ["voice-assistant", "speech-recognition", "tts", "nlp", "asyncio"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: MIT License",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Topic :: Multimedia :: Sound/Audio :: Speech",
+    "Typing :: Typed",
+]
+dependencies = [
+    "SpeechRecognition>=3.11",
+    "pyttsx3>=2.90",
+    "PyAudio>=0.2.14",
+    "httpx>=0.27",
+    "pydantic>=2.7",
+    "pydantic-settings>=2.3",
+    "SQLAlchemy>=2.0",
+    "python-dotenv>=1.0",
+]
+
+[project.urls]
+Homepage = "https://github.com/stephenombuya/Virtual-Personal-Assistant"
+Repository = "https://github.com/stephenombuya/Virtual-Personal-Assistant"
+"Bug Tracker" = "https://github.com/stephenombuya/Virtual-Personal-Assistant/issues"
+
+[project.scripts]
+voice-assistant = "main:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+# ──────────────────────────────────────────────
+# pytest
+# ──────────────────────────────────────────────
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
+addopts = [
+    "--strict-markers",
+    "--tb=short",
+    "-v",
+]
+markers = [
+    "integration: marks tests that require external services",
+    "slow: marks tests that run slowly",
+]
+
+# ──────────────────────────────────────────────
+# Coverage
+# ──────────────────────────────────────────────
+[tool.coverage.run]
+source = ["src"]
+omit = ["tests/*", "*/migrations/*"]
+
+[tool.coverage.report]
+show_missing = true
+fail_under = 80
+exclude_lines = [
+    "pragma: no cover",
+    "if TYPE_CHECKING:",
+    "raise NotImplementedError",
+    "if __name__ == .__main__.:",
+]
+
+# ──────────────────────────────────────────────
+# Ruff (linter + formatter)
+# ──────────────────────────────────────────────
+[tool.ruff]
+src = ["src"]
+line-length = 99
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B", "C4", "SIM", "ANN"]
+ignore = ["ANN101", "ANN102", "ANN401"]
+unfixable = ["B"]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**" = ["ANN", "S101"]
+
+# ──────────────────────────────────────────────
+# mypy
+# ──────────────────────────────────────────────
+[tool.mypy]
+python_version = "3.10"
+strict = true
+warn_return_any = true
+warn_unused_configs = true
+ignore_missing_imports = true
+
+# ──────────────────────────────────────────────
+# Bandit
+# ──────────────────────────────────────────────
+[tool.bandit]
+exclude_dirs = ["tests"]
+skips = ["B101"]  # allow assert statements in tests
